@@ -144,11 +144,12 @@ export interface SignupFormData {
   password: string;
   confirmPassword: string;
   howDidYouHear: string;
+  role: 'Booker' | 'Sitter'; // Added role
 }
 
 export const useSignup = () => {
   const { navigate } = useNavigation<NavigationProp<AuthStackNavigationType>>();
-  const { control, watch, handleSubmit, reset, formState: { errors, isValid } } = useForm<SignupFormData>({
+  const { control, watch, handleSubmit, reset, setValue, formState: { errors, isValid } } = useForm<SignupFormData>({ // Added setValue
     mode: 'onChange',
     defaultValues: {
       firstName: '',
@@ -158,10 +159,11 @@ export const useSignup = () => {
       password: '',
       confirmPassword: '',
       howDidYouHear: '',
+      role: 'Booker', // Default role
     },
   });
 
-  const [isChecked, setIsChecked] = useState(true);
+  const [isChecked, setIsChecked] = useState(true); // This seems unused, consider removing if not needed for terms/conditions
   // const [signup, { isLoading }] = useSignupMutation();
   const isLoading = false; // Placeholder
 
@@ -209,11 +211,30 @@ export const useSignup = () => {
       required: 'This field is required',
       minLength: { value: 3, message: 'Please provide more detail' },
     },
+    role: { // Added validation for role
+      required: 'Please select a role',
+    },
   };
 
-  const handleSignup = async (data: FieldValues) => {
+  const handleSignup = async (data: SignupFormData) => { // Changed FieldValues to SignupFormData
     try {
-      // Simulate successful signup without backend
+      // const signupResponse = await handlePostRequest({ // Assuming handlePostRequest and signup mutation are restored
+      //   requestFunction: signup,
+      //   requestBody: {
+      //     firstName: data.firstName.trim(),
+      //     lastName: data.lastName.trim(),
+      //     zipCode: data.zipCode.trim(),
+      //     email: data.email.toLowerCase().trim(),
+      //     password: data.password,
+      //     // confirmPassword: data.confirmPassword, // confirmPassword is usually not sent to backend
+      //     howDidYouHear: data.howDidYouHear.trim(),
+      //     role: data.role, // Pass the role
+      //   },
+      // });
+
+      // if (!signupResponse?.success) return;
+
+      console.log('Form Data to be submitted: ', data); // Log data including role
       reset();
       // Navigate after success
       navigate('Boarding'); // or 'VerifyOtp', as needed
@@ -243,5 +264,6 @@ export const useSignup = () => {
     validationRules,
     handleFacebookSignup,
     handleGoogleSignup,
+    setValue, // Export setValue
   };
 };

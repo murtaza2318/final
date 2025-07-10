@@ -17,7 +17,7 @@ namespace VelvetLeash.API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.0") // Assuming current version, adjust if necessary
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -83,12 +83,15 @@ namespace VelvetLeash.API.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)"); // Changed to nvarchar(450) to match User.Id
 
                     b.Property<string>("ZipCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId") // Added Index for UserId
+                        .IsUnique(); // Assuming one PetSitter profile per User
 
                     b.ToTable("PetSitters");
                 });
@@ -279,15 +282,48 @@ namespace VelvetLeash.API.Migrations
 
                     b.Property<string>("RevieweeId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)"); // Should this be nvarchar(450) and FK to User?
 
                     b.Property<string>("ReviewerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)"); // Should this be nvarchar(450) and FK to User?
 
                     b.HasKey("Id");
 
+                    // Potential: Add indices and foreign keys for ReviewerId and RevieweeId if they map to User.Id
+                    // b.HasIndex("ReviewerId");
+                    // b.HasIndex("RevieweeId");
+
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("VelvetLeash.API.Models.User", b => // Added User entity
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)"); // Consider adding .HasIndex("IX_Users_Email", IsUnique = true) if emails must be unique
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Role")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0); // Default to Booker
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("VelvetLeash.API.Models.UserNotificationSetting", b =>
@@ -339,22 +375,68 @@ namespace VelvetLeash.API.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)"); // Changed to nvarchar(450) to match User.Id
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId"); // Added Index for UserId
 
                     b.ToTable("UserNotificationSettings");
                 });
 
+
+            // Relationships for User
+            modelBuilder.Entity("PetSitter", b =>
+                {
+                    b.HasOne("VelvetLeash.API.Models.User", "User")
+                        .WithOne("PetSitterProfile") // Assuming PetSitterProfile is the navigation property in User model
+                        .HasForeignKey("PetSitter", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VelvetLeash.API.Models.Pet", b =>
+                {
+                     b.HasOne("VelvetLeash.API.Models.User", null) // Assuming Pet has a UserId pointing to User
+                        .WithMany("Pets") // Assuming Pets is the navigation property in User model
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("VelvetLeash.API.Models.Booking", b =>
+                {
+                     b.HasOne("VelvetLeash.API.Models.User", null) // Assuming Booking has a UserId pointing to User
+                        .WithMany("Bookings") // Assuming Bookings is the navigation property in User model
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade) // Or Restrict, depending on business logic
+                        .IsRequired();
+                });
+
+            // Potentially update Review relationships if ReviewerId/RevieweeId link to User
+            // modelBuilder.Entity("VelvetLeash.API.Models.Review", b => { ... });
+
+
             modelBuilder.Entity("VelvetLeash.API.Models.PetSitterService", b =>
                 {
                     b.HasOne("PetSitter", "PetSitter")
-                        .WithMany()
+                        .WithMany() // If PetSitter has a collection of PetSitterService, add it here
                         .HasForeignKey("PetSitterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("PetSitter");
+                });
+
+            modelBuilder.Entity("VelvetLeash.API.Models.UserNotificationSetting", b =>
+                {
+                    b.HasOne("VelvetLeash.API.Models.User", null)
+                        .WithMany("NotificationSettings") // Assuming NotificationSettings is the navigation property in User
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -9,6 +9,7 @@ export interface SignupRequest {
   password: string;
   confirmPassword: string;
   howDidYouHear: string;
+  role: 'Booker' | 'Sitter'; // Added role
 }
 
 export interface SignupResponse {
@@ -23,6 +24,7 @@ export interface SignupResponse {
       isEmailVerified: boolean;
       zipCode: string;
       howDidYouHear: string;
+      role: 'Booker' | 'Sitter'; // Added role
       createdAt: string;
       updatedAt: string;
     };
@@ -46,6 +48,7 @@ export interface LoginResponse {
       email: string;
       isEmailVerified: boolean;
       zipCode: string;
+      role: 'Booker' | 'Sitter'; // Added role
     };
     token: string;
     refreshToken: string;

@@ -35,3 +35,22 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# .NET build artifacts
+VelvetLeash.API/VelvetLeash.API/bin/Debug/
+VelvetLeash.API/VelvetLeash.API/bin/Release/
+VelvetLeash.API/VelvetLeash.API/obj/Debug/
+VelvetLeash.API/VelvetLeash.API/obj/Release/
+VelvetLeash.API/VelvetLeash.API/**/bin/**/*.pdb
+VelvetLeash.API/VelvetLeash.API/**/bin/**/*.dll
+VelvetLeash.API/VelvetLeash.API/**/obj/**/*.pdb
+VelvetLeash.API/VelvetLeash.API/**/obj/**/*.dll
+VelvetLeash.API/VelvetLeash.API/**/*.Generated.cs
+VelvetLeash.API/VelvetLeash.API/obj/**/*.props
+VelvetLeash.API/VelvetLeash.API/obj/**/*.targets
+# ASP.NET Core cache files
+VelvetLeash.API/VelvetLeash.API/obj/Debug/net8.0/*.csproj.AssemblyReference.cache
+VelvetLeash.API/VelvetLeash.API/obj/Release/net8.0/*.csproj.AssemblyReference.cache
+
+# Visual Studio files
+VelvetLeash.API/.vs/

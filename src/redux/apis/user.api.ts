@@ -62,6 +62,16 @@ export const user = createApi({
         };
       },
     }),
+
+    // Become a Sitter mutation
+    becomeSitter: build.mutation<{ success: boolean; message: string; data?: { role: 'Booker' | 'Sitter' } }, void>({
+      query: () => ({
+        url: 'user/become-sitter', // Example endpoint
+        method: 'POST',
+        // body can be empty or include any necessary info if backend requires
+      }),
+      invalidatesTags: ['User'], // Invalidate User tag to refetch user data which includes the role
+    }),
   }),
 });
 
@@ -71,4 +81,5 @@ export const {
   useSelectUserInjuryMutation,
   useLazyGetUserMessagesQuery,
   useUpdateUserProfileMutation,
+  useBecomeSitterMutation, // Export the new mutation
 } = user;

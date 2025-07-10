@@ -7,6 +7,7 @@ namespace VelvetLeash.API.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+        public DbSet<User> Users { get; set; } // Added DbSet for Users
         public DbSet<Pet> Pets { get; set; }
         public DbSet<PetSitter> PetSitters { get; set; }
         public DbSet<PetSitterService> PetSitterServices { get; set; }

@@ -1,209 +1,224 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { AuthStackNavigationType, RootStackNavigationType } from '../../utils/types/NavigationTypes';
-import { COLORS } from "../../utils/theme";
+import React from 'react';
+import {
+  View,
+  ScrollView,
+  Platform,
+  KeyboardAvoidingView,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  Image,
+  Dimensions,
+} from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
+import { useSignin } from './hooks/useSignin'; // Updated import
+import { COLORS } from '../../utils/theme';
+import CustomRHFTextInput from '../../components/CustomRHFTextInput';
+import { CustomText } from '../../components/CustomText';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { AuthStackNavigationType } from '../../utils/types/NavigationTypes';
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
-const SignInScreen = () => {
+const SignInScreen: React.FC = () => {
+  const {
+    control,
+    handleSubmit,
+    handleSignin, // Renamed from handleSignup
+    isLoading,
+    validationRules,
+  } = useSignin(); // Use the signin hook
+
   const navigation = useNavigation<NavigationProp<AuthStackNavigationType>>();
 
+  const navigateToSignUp = () => {
+    navigation.navigate('SignUp');
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Vector Background */}
-      <Image
-        source={require("../../../assets/images/Vector.png")}
-        style={styles.vectorBackground}
-      />
-
-      {/* House Illustration */}
-      <Image
-        source={require("../../../assets/images/signin_illustration.png")}
-        style={styles.houseIllustration}
-      />
-
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../../assets/images/logo.png")}
-          style={styles.logo}
-        />
-      </View>
-
-      {/* Sign In text */}
-      <TouchableOpacity style={styles.signInButton}>
-        <Text style={styles.signInButtonText}>Sign In</Text>
-      </TouchableOpacity>
-
-      {/* Circular Images */}
-      <Image
-        source={require("../../../assets/images/human1.png")}
-        style={[styles.circle, styles.circleLeft]}
-      />
-      <Image
-        source={require("../../../assets/images/human3.png")}
-        style={[styles.circle, styles.circleRight]}
-      />
-      <Image
-        source={require("../../../assets/images/human2.png")}
-        style={[styles.circleCenter]}
-      />
-
-      {/* Tagline */}
-      <Text style={styles.tagline}>
-        Trusted pet care right{"\n"}around the corner
-      </Text>
-
-      {/* Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.findCareButton} 
-          onPress={() => {
-            navigation.navigate("Location");
-          }}
-          activeOpacity={0.7}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjusted behavior
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : hp(2)}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.findCareButtonText}>Find Pet care</Text>
-        </TouchableOpacity>
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('../../../assets/images/logo.png')}
+                style={styles.logo}
+              />
+            </View>
+          </View>
 
-        <TouchableOpacity 
-          style={styles.createAccountButton} 
-          onPress={() => {
-            navigation.navigate("SignUp");
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.createAccountButtonText}>Create account</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          <CustomText textType="H2" bold style={styles.title}>
+            Welcome Back!
+          </CustomText>
+          <CustomText textType="BodyRegular" color={COLORS.NeutralGrey60} style={styles.subtitle}>
+            Sign in to continue your pet care journey.
+          </CustomText>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            <CustomRHFTextInput
+              control={control}
+              name="email"
+              rules={validationRules.email}
+              title="Email"
+              placeholder="Enter your email"
+              type="standard"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              titleTextStyle={styles.fieldTitle}
+            />
+            <CustomRHFTextInput
+              control={control}
+              name="password"
+              rules={validationRules.password}
+              title="Password"
+              placeholder="Enter your password"
+              type="standard"
+              secureTextEntry
+              autoCapitalize="none"
+              titleTextStyle={styles.fieldTitle}
+              containerStyle={styles.fieldSpacing}
+            />
+          </View>
+
+          <TouchableOpacity style={styles.forgotPasswordButton}>
+            <CustomText textType="BodySmallSemiBold" color={COLORS.Primary}>
+              Forgot Password?
+            </CustomText>
+          </TouchableOpacity>
+
+          {/* Login Button */}
+          <TouchableOpacity
+            style={[styles.loginButton, isLoading && { opacity: 0.6 }]}
+            onPress={handleSubmit(handleSignin)} // Use handleSignin
+            disabled={isLoading}
+          >
+            <CustomText
+              textType="BodyLargeSemiBold"
+              color={COLORS.NeutralGrey0}
+              textStyle={styles.loginButtonText}
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </CustomText>
+          </TouchableOpacity>
+
+          {/* Navigate to Sign Up */}
+          <View style={styles.signUpPromptContainer}>
+            <CustomText textType="BodyMediumRegular" color={COLORS.NeutralGrey60}>
+              Don't have an account?{' '}
+            </CustomText>
+            <TouchableOpacity onPress={navigateToSignUp}>
+              <CustomText textType="BodyMediumSemiBold" color={COLORS.Primary}>
+                Sign Up
+              </CustomText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Social Login (Optional - can be added later if needed) */}
+          {/*
+          <View style={styles.socialSection}>
+             <CustomText textType="BodyMediumRegular" color={COLORS.NeutralGrey60} center textStyle={styles.orText}>
+               or sign in with
+             </CustomText>
+             Social buttons here...
+          </View>
+          */}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: COLORS.NeutralGrey0,
   },
-  vectorBackground: {
-    position: "absolute",
-    top: height * 0.20,
-    width: width,
-    height: height * 0.45,
-    resizeMode: "contain",
-    zIndex: 0,
+  scrollContent: {
+    paddingHorizontal: wp(6),
+    paddingBottom: hp(5),
+    flexGrow: 1, // Ensure scrollview can grow
+    justifyContent: 'center', // Center content vertically
   },
-  
-  houseIllustration: {
-    position: "absolute",
-    top: height * 0.15,
-    width: width,
-    height: height * 0.65,
-    resizeMode: "contain",
-    zIndex: 5,
-    marginTop: height * 0.06,
+  header: {
+    alignItems: 'center', // Center logo
+    paddingTop: hp(4), // Reduced top padding
+    paddingBottom: hp(2),
+    // Removed fixed height to allow content to flow
   },
   logoContainer: {
-    position: "absolute",
-    top: height * 0.05,
-    left: width * 0.01,
-    alignItems: "center",
+    alignItems: 'center',
   },
   logo: {
-    width: width * 0.25,
+    width: width * 0.25, // Slightly larger logo
     height: width * 0.25,
-    resizeMode: "contain",
+    resizeMode: 'contain',
+    marginBottom: hp(2),
   },
-  appName: {
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: "500",
-    marginTop: height * 0.006,
+  title: {
+    textAlign: 'center',
+    marginBottom: hp(1),
+    color: COLORS.TextPrimary,
   },
-  signInButton: {
-    position: "absolute",
-    top: height * 0.08,
-    right: width * 0.05,
+  subtitle: {
+    textAlign: 'center',
+    marginBottom: hp(4),
   },
-  signInButtonText: {
-    fontSize: Math.min(width * 0.035, 14),
-    color: "#404348",
-    fontWeight: "600",
+  formContainer: {
+    paddingBottom: hp(1),
   },
-  circle: {
-    width: width * 0.18,
-    height: width * 0.18,
-    borderRadius: width * 0.09,
-    position: "absolute",
-    zIndex: 3,
+  fieldTitle: {
+    fontSize: RFValue(10),
+    fontWeight: '600', // Use string for fontWeight
+    color: COLORS.NeutralGrey80, // Example color
   },
-  circleLeft: {
-    top: height * 0.30,
-    left: width * 0.15,
-    zIndex: 3,
+  fieldSpacing: {
+    marginTop: hp(2), // Increased spacing between fields
   },
-  circleRight: {
-    top: height * 0.30,
-    right: width * 0.15,
-    zIndex: 3,
-    marginRight: width * 0.025,
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+    marginVertical: hp(1.5),
   },
-  circleCenter: {
-    width: width * 0.28,
-    height: width * 0.28,
-    borderRadius: width * 0.14,
-    top: height * 0.25,
-    marginBottom: height * 0.95,
-    zIndex: 3,
-  },
-  tagline: {
-    position: "absolute",
-    top: height * 0.57,
-    textAlign: "center",
-    fontFamily: 'Pacifico_400Regular',
-    fontSize: Math.min(width * 0.1, 40),
-    color: "#404348",
-    zIndex: 4,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: height * 0.1,
-    width: width * 0.8,
-    gap: height * 0.02,
-    zIndex: 20,
-  },
-  findCareButton: {
+  loginButton: {
     backgroundColor: COLORS.Primary,
-    paddingVertical: height * 0.017,
-    borderRadius: width * 0.09,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-    zIndex: 10,
+    borderRadius: RFValue(12), // Consistent rounding
+    height: RFValue(48), // Standard button height
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: hp(3), // Spacing after login button
   },
-  findCareButtonText: {
-    color: "white",
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: "600",
-    textAlign: "center",
+  loginButtonText: {
+    fontSize: RFValue(14), // Adjusted font size
   },
-  createAccountButton: {
-    backgroundColor: COLORS.ButtonPrimary,
-    borderColor: "#a9a59f",
-    borderWidth: 1,
-    paddingVertical: height * 0.017,
-    borderRadius: width * 0.09,
+  signUpPromptContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: hp(2), // Spacing before sign up prompt
+    marginBottom: hp(4), // Bottom margin
   },
-  createAccountButtonText: {
-    color: "#404348",
-    fontSize: Math.min(width * 0.04, 16),
-    fontWeight: "600",
-    textAlign: "center",
-  },
+  // Styles for social login (if added later)
+  // socialSection: {
+  //   marginBottom: hp(2),
+  // },
+  // orText: {
+  //   marginBottom: hp(1),
+  //   fontSize: RFValue(11),
+  //   textAlign: 'center',
+  // },
 });
 
 export default SignInScreen;

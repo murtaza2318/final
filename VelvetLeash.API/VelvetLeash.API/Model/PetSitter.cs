@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VelvetLeash.API.Models; // Added using statement for User model
 
 public class PetSitter
 {
@@ -7,6 +8,8 @@ public class PetSitter
 
     [Required]
     public string UserId { get; set; }
+    [ForeignKey("UserId")] // Added ForeignKey attribute
+    public virtual User User { get; set; } // Added navigation property to User
 
     public string? About { get; set; }
     public string? Skills { get; set; }

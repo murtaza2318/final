@@ -34,14 +34,17 @@ const SignupScreen: React.FC = () => {
     validationRules,
     handleFacebookSignup,
     handleGoogleSignup,
+    setValue, // Destructure setValue
+    watch, // Destructure watch to observe role value for styling
   } = useSignup();
 
   const navigation = useNavigation<NavigationProp<AuthStackNavigationType>>();
+  const currentRole = watch('role'); // Watch the current role
 
-  const onSubmit = (data: any) => {
-    console.log('Form Data Submitted: ', data);
-    navigation.navigate('Boarding');
-  };
+  // const onSubmit = (data: any) => { // This onSubmit seems unused as handleSignup is directly passed to handleSubmit
+  //   console.log('Form Data Submitted: ', data);
+  //   navigation.navigate('Boarding');
+  // };
 
   const handleCancel = () => {
     navigation.navigate('SignIn');
@@ -144,6 +147,45 @@ const SignupScreen: React.FC = () => {
               titleTextStyle={styles.fieldTitle}
               containerStyle={styles.fieldSpacing}
             />
+
+            {/* Role Selection */}
+            <View style={[styles.fieldSpacing, styles.roleSelectionContainer]}>
+              <CustomText textType="BodyMediumSemiBold" style={styles.fieldTitle}>
+                I am a:
+              </CustomText>
+              <View style={styles.roleOptionsContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.roleButton,
+                    currentRole === 'Booker' && styles.roleButtonSelected,
+                  ]}
+                  onPress={() => setValue('role', 'Booker', { shouldValidate: true })}
+                >
+                  <CustomText
+                    textType="BodyMediumRegular"
+                    color={currentRole === 'Booker' ? COLORS.StaticWhite : COLORS.TextPrimary}
+                  >
+                    Booker
+                  </CustomText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.roleButton,
+                    currentRole === 'Sitter' && styles.roleButtonSelected,
+                  ]}
+                  onPress={() => setValue('role', 'Sitter', { shouldValidate: true })}
+                >
+                  <CustomText
+                    textType="BodyMediumRegular"
+                    color={currentRole === 'Sitter' ? COLORS.StaticWhite : COLORS.TextPrimary}
+                  >
+                    Sitter
+                  </CustomText>
+                </TouchableOpacity>
+              </View>
+              {/* Display error for role if any */}
+              {/* This requires control and errors from useForm to be passed to a CustomRHFErrorMessage component or handled manually */}
+            </View>
           </View>
 
           {/* Save Button */}
@@ -249,6 +291,29 @@ const styles = StyleSheet.create({
   orText: {
     marginBottom: hp(1),
     fontSize: RFValue(11),
+  },
+  // Styles for Role Selection
+  roleSelectionContainer: {
+    // marginTop: hp(1), // Already part of fieldSpacing
+  },
+  roleOptionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: hp(1),
+  },
+  roleButton: {
+    flex: 1, // Make buttons take equal width
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(2),
+    borderRadius: RFValue(10),
+    borderWidth: 1,
+    borderColor: COLORS.NeutralGrey40,
+    alignItems: 'center',
+    marginHorizontal: wp(1), // Add some space between buttons
+  },
+  roleButtonSelected: {
+    backgroundColor: COLORS.Primary,
+    borderColor: COLORS.Primary,
   },
 });
 

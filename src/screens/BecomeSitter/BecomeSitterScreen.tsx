@@ -1,20 +1,73 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'; // Added ActivityIndicator
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS, FONT_POPPINS } from '../../utils/theme';
 import { CustomIcon } from '../../components/CustomIcon';
+import { useBecomeSitterMutation } from '../../redux/apis/user.api'; // Import the mutation
+import { useAppDispatch, useAppSelector } from '../../redux/store'; // Import dispatch and selector
+import { setUserDetails } from '../../redux/reducers/userSlice'; // Import action to update user details
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import navigation
+import { RootStackNavigationType } from '../../utils/types/NavigationTypes'; // Or your specific navigation type
 
 const BecomeSitterScreen = () => {
+  const navigation = useNavigation<NavigationProp<RootStackNavigationType>>(); // Initialize navigation
+  const dispatch = useAppDispatch();
+  const currentUser = useAppSelector(state => state.user); // Get current user from Redux state
+
+  const [becomeSitter, { isLoading, error }] = useBecomeSitterMutation();
+
+  const handleBecomeSitter = async () => {
+    if (currentUser.role === 'Sitter') {
+      // Optionally, show a message that user is already a sitter
+      console.log('User is already a sitter.');
+      // navigation.navigate('SitterDashboard'); // Or appropriate screen
+      return;
+    }
+
+    try {
+      const response = await becomeSitter().unwrap(); // Call the mutation
+      if (response.success) {
+        // Update user role in Redux state
+        // Option 1: If API returns the new role in response.data.role
+        // dispatch(setUserDetails({ ...currentUser, role: response.data?.role || 'Sitter' }));
+
+        // Option 2: More robustly, rely on invalidatesTags and let useGetCurrentUser refetch.
+        // For now, let's optimistically update if the API response is simple.
+        // If the API returns the full updated user object, that's even better.
+        dispatch(setUserDetails({ ...currentUser, role: 'Sitter' })); // Optimistic update or use response.data.role
+
+        console.log('Successfully became a sitter!');
+        // Navigate to sitter onboarding or dashboard
+        navigation.navigate('More'); // Placeholder navigation
+        // Example: navigation.navigate('SitterOnboarding');
+      } else {
+        console.error('Failed to become a sitter:', response.message);
+        // Show error toast: response.message
+      }
+    } catch (err) {
+      console.error('Error becoming a sitter:', err);
+      // Show error toast from err
+    }
+  };
+
+  const handleClose = () => {
+    navigation.goBack();
+  };
+
+  // The reload button functionality can be decided later (e.g., refetch screen data if any)
+  // For now, it does nothing.
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIcon}>
+        <TouchableOpacity style={styles.headerIcon} onPress={handleClose}>
           <CustomIcon icon="close" type="AntDesign" size={RFValue(24)} color={COLORS.TextPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Become a Sitter</Text>
-        <TouchableOpacity style={styles.headerIcon}>
+        <TouchableOpacity style={styles.headerIcon} /* onPress={handleReload} */>
           <CustomIcon icon="reload1" type="AntDesign" size={RFValue(22)} color={COLORS.TextPrimary} />
         </TouchableOpacity>
       </View>
@@ -28,9 +81,20 @@ const BecomeSitterScreen = () => {
           <Text style={styles.introText}>
             velvet leash co makes it easy and promotes you to the nation's largest network of pet owners. Earn money doing something you love.
           </Text>
-          <TouchableOpacity style={styles.getStartedBtn}>
-            <Text style={styles.getStartedBtnText}>Get started</Text>
+          <TouchableOpacity
+            style={[styles.getStartedBtn, isLoading && styles.disabledButton]}
+            onPress={handleBecomeSitter}
+            disabled={isLoading || currentUser.role === 'Sitter'} // Disable if loading or already a sitter
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.getStartedBtnText}>
+                {currentUser.role === 'Sitter' ? 'You are a Sitter' : 'Get started'}
+              </Text>
+            )}
           </TouchableOpacity>
+          {error && <Text style={styles.errorText}>Error: {JSON.stringify(error)}</Text>}
           <Text style={styles.flexTitle}>Flexibility puts you in control</Text>
           <View style={styles.bulletGroup}>
             <Text style={styles.flexItem}>✔ Set your own schedules and prices</Text>
@@ -288,6 +352,16 @@ const styles = StyleSheet.create({
     color: COLORS.TextPrimary,
     marginTop: 12,
     marginBottom: 8,
+  },
+  disabledButton: {
+    backgroundColor: COLORS.NeutralGrey60, // Example disabled color
+  },
+  errorText: {
+    fontFamily: FONT_POPPINS.regularFont,
+    fontSize: RFValue(12),
+    color: COLORS.SemanticError, // Ensure this color is defined in your theme
+    textAlign: 'center',
+    marginTop: hp(1),
   },
 });
 

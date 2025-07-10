@@ -9,6 +9,7 @@ export interface IUser {
   profileComplete: boolean;
   country?: string | null;
   provider: 'apple' | 'google' | 'facebook' | 'email' | null;
+  role: 'Booker' | 'Sitter' | null; // Added role
 }
 
 const initialState: IUser = {
@@ -20,6 +21,7 @@ const initialState: IUser = {
   profileComplete: false,
   country: '',
   provider: null,
+  role: null, // Initialize role
 };
 
 export const userSlice = createSlice({
